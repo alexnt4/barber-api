@@ -1,0 +1,73 @@
+package http
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/alexnt4/barber-api/internal/domain"
+	"github.com/alexnt4/barber-api/internal/service"
+	"github.com/gin-gonic/gin"
+)
+
+type AppointmentHandler struct {
+	svc *service.AppointmentService
+}
+
+func NewAppoinmentHandler(svc *service.AppointmentService) *AppointmentHandler {
+	return &AppointmentHandler{svc}
+}
+
+type CreateAppointmentRequest struct {
+	ClienteName string `json:"cliente_name" binding:"required"`
+	StartTime   string `json:"start_time" binding:"required"`
+	EndTime     string `json:"end_time" binding:"required"`
+	Products    []uint `json:"products"`
+}
+
+type UpdateAppointmentRequest struct {
+	ClienteName string `json:"cliente_name" binding:"required"`
+	StartTime   string `json:"start_time" binding:"required"`
+	EndTime     string `json:"end_time" binding:"required"`
+	Products    []uint `json:"products"`
+}
+
+func (h *AppointmentHandler) Create(c *gin.Context) {
+	var req CreateAppointmentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Parseo de fechas
+	startTime, err := time.Parse(time.RFC3339, req.StartTime)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "formato de fecha invalido para start_time, use RFC3339"})
+		return
+	}
+
+	endTime, err := time.Parse(time.RFC3339, req.EndTime)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "formato de fecha invalido para end_time, use RFC3339"})
+		return
+	}
+
+	// Mappear IDs a domain.Product
+	products := make([]domain.Product, len(req.Products))
+	for i, id := range req.Products {
+		products[i] = domain.Product{ID: id}
+	}
+
+	appt := &domain.Appointment{
+		ClienteName: req.ClienteName,
+		StartTime:   startTime,
+		EndTime:     endTime,
+		Products:    products,
+	}
+
+	if err := h.svc.Schedule(c.Request.Context(), appt); err != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, appt)
+}
