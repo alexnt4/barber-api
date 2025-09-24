@@ -71,3 +71,16 @@ func (h *AppointmentHandler) Create(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, appt)
 }
+
+func (h *AppointmentHandler) List(c *gin.Context) {
+	appoinmets, err := h.svc.ListAll(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"appoinmets": appoinmets,
+		"total":      len(appoinmets),
+	})
+}
