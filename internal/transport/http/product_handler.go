@@ -3,7 +3,6 @@ package http
 import (
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/alexnt4/barber-api/internal/domain"
 	"github.com/alexnt4/barber-api/internal/service"
@@ -85,7 +84,7 @@ func (h *ProductHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, appt)
 }
 
-func (h *AppointmentHandler) Update(c *gin.Context) {
+func (h *ProductHandler) Update(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
@@ -93,47 +92,27 @@ func (h *AppointmentHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req UpdateAppointmentRequest
+	var req UpdateProductRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Parseo de fechas
-	startTime, err := time.Parse(time.RFC3339, req.StartTime)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "formato de fecha invalido para start_time, use RFC3339"})
+	product := &domain.Product{
+		Name:        req.Name,
+		Price:       req.Price,
+		Description: req.Description,
 	}
 
-	endTime, err := time.Parse(time.RFC3339, req.EndTime)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "formato de fecha invalido para end_time, use RFC3339"})
-		return
-	}
-
-	// Mapear IDs a domain.Product
-	products := make([]domain.Product, len(req.Products))
-	for i, id := range req.Products {
-		products[i] = domain.Product{ID: id}
-	}
-
-	appt := &domain.Appointment{
-		ID:          uint(id),
-		ClienteName: req.ClienteName,
-		StartTime:   startTime,
-		EndTime:     endTime,
-		Products:    products,
-	}
-
-	if err := h.svc.Update(c.Request.Context(), uint(id), appt); err != nil {
+	if err := h.svc.Update(c.Request.Context(), uint(id), product); err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, appt)
+	c.JSON(http.StatusOK, product)
 }
 
-func (h *AppointmentHandler) Delete(c *gin.Context) {
+func (h *ProductHandler) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
@@ -141,38 +120,14 @@ func (h *AppointmentHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.Cancel(c.Request.Context(), uint(id)); err != nil {
+	if err := h.svc.Delete(c.Request.Context(), uint(id)); err != nil {
 		if err == domain.ErrorNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "cita no encontrada"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "prducto no encontrada"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "cita cancelada exitosamente"})
-}
-
-func (h *AppointmentHandler) GetTotal(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID invalido"})
-		return
-	}
-
-	total, err := h.svc.GetTotalPrice(c.Request.Context(), uint(id))
-	if err != nil {
-		if err == domain.ErrorNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "cita no encontrada"})
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"appoinmet_id": id,
-		"total":        total,
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "prducto cancelada exitosamente"})
 }
