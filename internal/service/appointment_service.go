@@ -44,7 +44,7 @@ func (s *AppointmentService) Schedule(ctx context.Context, appt *domain.Appointm
 	// 4. Validar existencia de productos
 	for i, prod := range appt.Products {
 		existingProd, err := s.prodRepo.GetById(ctx, prod.ID)
-		if err == nil {
+		if err != nil {
 			if err == domain.ErrorNotFound {
 				return errors.New("producto no encontrado")
 			}

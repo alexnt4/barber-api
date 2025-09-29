@@ -19,17 +19,17 @@ func NewAppoinmentHandler(svc *service.AppointmentService) *AppointmentHandler {
 }
 
 type CreateAppointmentRequest struct {
-	ClienteName string `json:"cliente_name" binding:"required"`
-	StartTime   string `json:"start_time" binding:"required"`
-	EndTime     string `json:"end_time" binding:"required"`
-	Products    []uint `json:"products"`
+	ClientName string `json:"client_name" binding:"required"`
+	StartTime  string `json:"start_time" binding:"required"`
+	EndTime    string `json:"end_time" binding:"required"`
+	Products   []uint `json:"products"`
 }
 
 type UpdateAppointmentRequest struct {
-	ClienteName string `json:"cliente_name" binding:"required"`
-	StartTime   string `json:"start_time" binding:"required"`
-	EndTime     string `json:"end_time" binding:"required"`
-	Products    []uint `json:"products"`
+	ClientName string `json:"client_name" binding:"required"`
+	StartTime  string `json:"start_time" binding:"required"`
+	EndTime    string `json:"end_time" binding:"required"`
+	Products   []uint `json:"products"`
 }
 
 func (h *AppointmentHandler) Create(c *gin.Context) {
@@ -59,10 +59,10 @@ func (h *AppointmentHandler) Create(c *gin.Context) {
 	}
 
 	appt := &domain.Appointment{
-		ClienteName: req.ClienteName,
-		StartTime:   startTime,
-		EndTime:     endTime,
-		Products:    products,
+		ClientName: req.ClientName,
+		StartTime:  startTime,
+		EndTime:    endTime,
+		Products:   products,
 	}
 
 	if err := h.svc.Schedule(c.Request.Context(), appt); err != nil {
@@ -140,11 +140,11 @@ func (h *AppointmentHandler) Update(c *gin.Context) {
 	}
 
 	appt := &domain.Appointment{
-		ID:          uint(id),
-		ClienteName: req.ClienteName,
-		StartTime:   startTime,
-		EndTime:     endTime,
-		Products:    products,
+		ID:         uint(id),
+		ClientName: req.ClientName,
+		StartTime:  startTime,
+		EndTime:    endTime,
+		Products:   products,
 	}
 
 	if err := h.svc.Update(c.Request.Context(), uint(id), appt); err != nil {

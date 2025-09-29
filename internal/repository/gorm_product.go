@@ -22,7 +22,7 @@ func (r *GormProductRepo) Create(ctx context.Context, prod *domain.Product) erro
 func (r *GormProductRepo) GetById(ctx context.Context, id uint) (*domain.Product, error) {
 	var prod domain.Product
 
-	if err := r.db.WithContext(ctx).Preload("Products").First(&prod, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&prod, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, domain.ErrorNotFound
 		}
@@ -35,7 +35,10 @@ func (r *GormProductRepo) GetById(ctx context.Context, id uint) (*domain.Product
 func (r *GormProductRepo) List(ctx context.Context) ([]domain.Product, error) {
 	var prod []domain.Product
 
-	if err := r.db.WithContext(ctx).Preload("Products").Find(&prod).Error; err != nil {
+	// if err := r.db.WithContext(ctx).Preload("Products").Find(&prod).Error; err != nil {
+	//	return nil, err
+	//}
+	if err := r.db.WithContext(ctx).Find(&prod).Error; err != nil {
 		return nil, err
 	}
 

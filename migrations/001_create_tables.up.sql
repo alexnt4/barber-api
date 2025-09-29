@@ -11,7 +11,7 @@ CREATE TABLE products (
 -- Crear tabla de citas 
 CREATE TABLE appointments (
   id SERIAL PRIMARY KEY,
-  cliente_name VARCHAR(100) NOT NULL,
+  client_name VARCHAR(100) NOT NULL,
   start_time TIMESTAMP NOT NULL,
   end_time TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -19,7 +19,7 @@ CREATE TABLE appointments (
 );
 
 --  Creear tabla de relacion many-to-many entre citas y productos
-CREATE TABLE appointment_product (
+CREATE TABLE appointment_products (
   appointment_id INTEGER REFERENCES appointments(id) ON DELETE CASCADE,
   product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
   PRIMARY KEY (appointment_id, product_id)
